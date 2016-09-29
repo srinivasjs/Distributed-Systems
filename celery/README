@@ -18,3 +18,35 @@ Clients and Workers will automatically retry in case of Failures/ connection los
 as RabbitMQ support HA in the form of Master/Master or Master/Slave Replication
 
 Source : http://docs.celeryproject.org/en/latest/getting-started/introduction.html
+
+Celery Basics :
+
+Celery library must be instantiated before use, instance being called as an Application (or app in short)
+Multiple Celery Applications with different configurations, tasks can co-exist in the same process space
+
+Simple Code Snippet :
+
+from celery import Celery
+app = Celery()  << Instantiation of Celery
+
+We could see all supported fuctionalities of this Celery class .
+print dir(app)
+
+When we send a task message in Celery, the message will not contain any Source Code instead the name of the Task
+to be executed is sent . Every Worker maintains a mapping of Task names to their actual functions, called Task Registry.
+
+Configuration:
+
+Celery configuration can be manipulated to suit requirements . 
+
+The Application instance that we created before :
+app = Celery() 
+is lazy, meaning that it will not be evaluated until something is actually needed.
+
+Creating a Celery() instance only creates :
+1. A logical clock instance, used by events
+2. A Task Registry
+3. app.on_init() >> By default, it just initializes doing nothing
+
+
+
