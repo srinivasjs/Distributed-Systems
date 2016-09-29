@@ -32,6 +32,8 @@ app = Celery()  << Instantiation of Celery
 We could see all supported fuctionalities of this Celery class .
 print dir(app)
 
+['AsyncResult', 'Beat', 'GroupResult', 'IS_OSX', 'IS_WINDOWS', 'Pickler', 'ResultSet', 'SYSTEM', 'Task', 'TaskSet', 'TaskSetResult', 'WorkController', 'Worker', '__class__', '__delattr__', '__dict__', '__doc__', '__enter__', '__exit__', '__format__', '__getattribute__', '__hash__', '__init__', '__module__', '__new__', '__reduce__', '__reduce_args__', '__reduce_ex__', '__reduce_keys__', '__reduce_v1__', '__repr__', '__setattr__', '__sizeof__', '__str__', '__subclasshook__', '__weakref__', '_acquire_connection', '_after_fork', '_autodiscover_tasks', '_config_source', '_finalize_mutex', '_fixups', '_get_backend', '_get_config', '_maybe_close_pool', '_pending', '_pending_defaults', '_pool', '_preconf', '_rgetattr', '_task_from_fun', '_tasks', '_using_v1_reduce', 'accept_magic_kwargs', 'add_defaults', 'amqp', 'amqp_cls', 'annotations', 'autodiscover_tasks', 'autofinalize', 'backend', 'backend_cls', 'broker_connection', 'bugreport', 'builtin_fixups', 'canvas', 'clock', 'close', 'conf', 'config_from_cmdline', 'config_from_envvar', 'config_from_object', 'configured', 'connection', 'connection_or_acquire', 'control', 'control_cls', 'create_task_cls', 'current_task', 'default_connection', 'default_producer', 'either', 'events', 'events_cls', 'finalize', 'finalized', 'fixups', 'loader', 'loader_cls', 'log', 'log_cls', 'mail_admins', 'main', 'now', 'oid', 'on_configure', 'on_init', 'pool', 'prepare_config', 'producer_or_acquire', 'registry_cls', 'select_queues', 'send_task', 'set_as_current', 'set_current', 'set_default', 'setup_security', 'signature', 'start', 'steps', 'subclass_with_self', 'task', 'task_cls', 'tasks', 'timezone', 'user_options', 'worker_main']
+
 When we send a task message in Celery, the message will not contain any Source Code instead the name of the Task
 to be executed is sent . Every Worker maintains a mapping of Task names to their actual functions, called Task Registry.
 
@@ -47,6 +49,10 @@ Creating a Celery() instance only creates :
 1. A logical clock instance, used by events
 2. A Task Registry
 3. app.on_init() >> By default, it just initializes doing nothing
+
+Let us look into more details on Tasks ...
+
+Tasks
 
 
 
