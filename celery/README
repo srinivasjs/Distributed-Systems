@@ -37,6 +37,8 @@ print dir(app)
 When we send a task message in Celery, the message will not contain any Source Code instead the name of the Task
 to be executed is sent . Every Worker maintains a mapping of Task names to their actual functions, called Task Registry.
 
+Note : In short Celery can be called as an WRAPPER to Message Broker such as RabbitMQ
+
 Configuration:
 
 Celery configuration can be manipulated to suit requirements . 
@@ -54,5 +56,61 @@ Let us look into more details on Tasks ...
 
 Tasks
 
+Tasks in celery perform 2 roles:
+1. What happens when a Task is called (sends a message)
+2. What happens when a Worker recieves message
+
+A Task message does not appear until it has been acknowledged by the Worker
+A worker can reserve any number of messages while Messages can even be redelivered to another worker
+under power failure leading to Worker being killed
+
+Task functions need to be IDEMPOTENT . Just in case to avoid repeated execution of a Task in case it is not idempotent, the
+message can be acknowledged before the Execution of a Task.
+
+But still, acks_late config in celery can be set to indicate that Message needs to be acknowledged only after Task returns
+
+When to use acks_late ? (source : http://docs.celeryproject.org/en/latest/faq.html#faq-acks-late-vs-retry)
+
+The acks_late setting would be used when you need the task to be executed again if the worker (for some reason) crashes mid-execution. It’s important to note that the worker is not known to crash, and if it does it is usually an unrecoverable error that requires human intervention (bug in the worker, or task code).
+
+
+A simple Task Example :
+
+@app.task(bind=True):
+def add(x, y):
+    return x+y
+    
+Note : The bind argument to the task decorator will give access to self (the task type instance).
+Task Type Instance : 
+
+app is the Celery instance that we'd created before .
+
+Varoius Task Execution States :
+
+Each and every Task state will have Metadata attached to it :
+such as if Task is in STARTED state, the metadata will be such as pid and hostname of the worker process executing the task.
+
+PENDING : Indicates Task is waiting for execution
+STARTED : Task has been started
+SUCCESS : Task has been successfull
+FAILURE  :  Task execution has resulted in Failure
+RETRY  :  Task is being retried
+REVOKED  :  Task has been revoked
+
+Let's now see how Task System in Celery works :
+
+When tasks are sent, no actual function code is sent with it, just the name of the task to execute. When the worker then receives the message it can look up the name in its task registry to find the execution code.
+This means that your workers should always be updated with the same software as the client.
+
+All defined tasks are listed in a registry. The registry contains a list of task names and their task classes. This is the list of tasks built-in to celery. Note that tasks will only be registered when the module they are defined in is imported.
+
+Performance and Strategies
+
+It is better to split a problem defined in task into multiple subtasks rather than defining a single problem in one task. This helps in multiple tasks desired to serve a single problem to be executed in parallel and also does not make a worker from executing a single task for long time making other tasks to remain in wait task queue
+
+Data Locality
+
+The Worker processing a task must be as close as possible to data .
+The best way to share data across Workers is to use distributed cache system such as memcached
 
 
