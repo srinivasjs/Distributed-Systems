@@ -1,5 +1,7 @@
 Celery is a Distributed System to process vast amounts of messages. It is a Task Queue, that also supports Task Scheduling
 
+Note  :  Celery can be instantiated, which means several instances of Celery may exist in the same process space. Also, large parts can be customized without resorting to monkey patching.
+
 Task Queue:
 
 A Task Queue distributes work across multiple threads/machines . A Task Queue takes in a unit of work called Task .
@@ -73,7 +75,6 @@ When to use acks_late ? (source : http://docs.celeryproject.org/en/latest/faq.ht
 
 The acks_late setting would be used when you need the task to be executed again if the worker (for some reason) crashes mid-execution. It’s important to note that the worker is not known to crash, and if it does it is usually an unrecoverable error that requires human intervention (bug in the worker, or task code).
 
-
 A simple Task Example :
 
 @app.task(bind=True):
@@ -113,4 +114,49 @@ Data Locality
 The Worker processing a task must be as close as possible to data .
 The best way to share data across Workers is to use distributed cache system such as memcached
 
+Concurrency in celery :
+
+By default multiprocessing is used to perform concurrent execution of tasks. The number of Worker Processes/Threads can be changed using the --concurrency argument and defaults to number of CPUs availible on the machine
+
+  -c CONCURRENCY, --concurrency=CONCURRENCY
+                        Number of child processes processing the queue. The
+                        default is the number of CPUs available on your
+                        system.
+  -P POOL_CLS, --pool=POOL_CLS
+                        Pool implementation: prefork (default), eventlet,
+                        gevent, solo or threads.
+                        
+Celery Workers:
+
+Celery Worker consists of 4 main components : Worker, Scheduler, Mediator anfd Task Pool . Runs in parallel working with two Data Structures i.e. ready queue and ETA Schedule
+
+Consumer
+
+Consumer recieves messages from Messaging Broker Kombu . Tasks with an ETA or rate limiter are entered into Timer, messages that can be immediately processed are sent to execution pool.
+When a message is recieved it is converted to celery.worker.job.TaskRequest object
+
+note : Timer in celery is a DataStructure that uses "heapq" (This module provides an implementation of the heap queue algorithm, also known as the priority queue algorithm.) to schedule internal functions such as cleanup and internal monitoring functions . Also schedules ETA tasks and rate limiter tasks as discussed above
+
+Consumer TaskPool:
+
+is an modified version of multiprocessing.pool . It also monitors all of the workers whether they're running at all times . If a Worker is missing, then it replaces with new one
+
+What does --concurrency and --pool mean ?
+
+--concurrency:
+- We're using the multiprocessing pool and want to consume messages
+  in parallel.  Some report better performance using multiple worker instances
+  instead of running a single instance with many pool workers.
+
+--pool:
+- We're using the eventlet/gevent (and due to the infamous GIL, also the 'threads') pool), and you want to execute tasks on multiple CPU cores.
+
+In Brief :
+
+We could select Number of Worker Processes/Threads to carry out execution of our Tasks from Task Queue .
+Very nice Google Forum Discussion that clarifies above Topic :
+
+https://groups.google.com/forum/#!topic/celery-users/eq3L5vxy_t4
+
+Complete Source of learning for Celery (referred here): http://docs.celeryproject.org/en/latest/
 
